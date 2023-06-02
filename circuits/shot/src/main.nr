@@ -1,18 +1,18 @@
 use dep::std;
 
-fn check_for_hit(mines: [u8; 5], dig: u8) -> bool {
+fn check_for_hit(mines: [Field; 5], dig: u8) -> bool {
     let mut hits = 0;
     for i in 0..5 {
-        if shot == mines[i] {
+        if dig == mines[i] as u8 {
             hits = hits + 1;
         }
     };
-    hits > 0
+    hits as u8 > 0
 }
 
 
 
-fn main(hash: pub Field, hit: pub u1, mines: [u8; 5], dig: pub u8) {
+fn main(hash: pub Field, hit: pub u1, mines: [Field; 5], dig: pub u8) {
 
    constrain dig < 25;
 

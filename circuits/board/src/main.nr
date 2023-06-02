@@ -19,7 +19,7 @@ fn check_for_collision(mines: [Field; 5]) {
 fn main(hash: pub Field, mines: [Field; 5]) {
     // Check ship ranges
     for i in 0..5 {
-     constrain mines[i] < 25;
+     constrain mines[i] as u16 < 25;
     };
     // Ensure ships have valid placement and do not share coordinates with each other
     check_for_collision(mines);
