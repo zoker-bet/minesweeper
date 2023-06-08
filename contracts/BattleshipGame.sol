@@ -20,7 +20,7 @@ contract BattleshipGame is IBattleshipGame {
     ) ERC2771Context(_forwarder) {
         trustedForwarder = _forwarder;
         bv = IBoardVerifier(_bv);
-        sv = IShotVerifier(_sv);
+        sv = IDigVerifier(_sv);
     }
 
     /// FUNCTIONS ///

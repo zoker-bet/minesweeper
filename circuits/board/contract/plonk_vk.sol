@@ -2600,7 +2600,7 @@ abstract contract BaseUltraVerifier {
     }
 }
 
-contract BoardVerifier is BaseUltraVerifier {
+contract UltraVerifier is BaseUltraVerifier {
     function getVerificationKeyHash() public pure override(BaseUltraVerifier) returns (bytes32) {
         return UltraVerificationKey.verificationKeyHash();
     }

@@ -3,7 +3,6 @@ pragma solidity >=0.6.0;
 
 import "@openzeppelin/contracts/metatx/ERC2771Context.sol";
 import "./IVerifier.sol";
-
 /**
  * Abstraction for Zero-Knowledge Battleship Game
  */
@@ -48,7 +47,7 @@ abstract contract IBattleshipGame is ERC2771Context {
     mapping(address => uint256) public playing; // map player address to game played
 
     IBoardVerifier bv; // verifier for proving initial board rule compliance
-    IShotVerifier sv; // verifier for proving shot hit/ miss
+    IDigVerifier sv; // verifier for proving shot hit/ miss
 
     /// MODIFIERS ///
 

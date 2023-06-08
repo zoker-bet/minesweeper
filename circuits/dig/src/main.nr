@@ -14,12 +14,12 @@ fn check_for_hit(mines: [Field; 5], dig: u8) -> bool {
 
 fn main(hash: pub Field, hit: pub u1, mines: [Field; 5], dig: pub u8) {
 
-   constrain dig < 25;
+   assert(dig < 25);
 
    // Ensure computed hash is equal to provided hash
    let computed_hash = std::hash::pedersen(mines);
-   constrain hash == computed_hash[0];
+   assert(hash == computed_hash[0]);
 
    let hits = check_for_hit(mines, dig);
-   constrain hits as u1 == hit;
+   assert(hits as u1 == hit);
 }
