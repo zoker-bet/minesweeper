@@ -21,14 +21,17 @@ import { numToHex } from '../utils';
     const mineBuffer = sha256.hash(Buffer.from(mines));
     const hash = mineBuffer.toJSON().data;
     const hit = 1;
+    const hashed = `0x${mineBuffer.toString('hex')}`
+    console.log(hashed);
     // Convert to TOML and write witness to prover.toml and public inputs to verified
-    writeFileSync('circuits/dig/Prover.toml', stringify({ hash, hit, dig, mines }));
+    writeFileSync('circuits/dig/Prover.toml', stringify({ hash, hit, dig, mines, hashed }));
     console.log('Dig witness written to /dig/Prover.toml');
     writeFileSync('circuits/dig/Verifier.toml', stringify({
         setpub: [],
         hash,
         hit,
-        dig
+        dig,
+        hashed
     }));
     console.log('Dig verifier written to /dig/Verifier.toml');
 })();

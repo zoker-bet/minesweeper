@@ -24,6 +24,7 @@ contract MineSweeper {
         GameStatus status; // game lifecycle tracker
         address winner; // game winner
         bool canEnd;
+        address nextTurn;
     }
 
     enum GameStatus {
@@ -35,16 +36,29 @@ contract MineSweeper {
     /// CONSTRUCTOR ///
     constructor(
         address _bv,
-        address _sv
+        address _dv
     ){
         bv = IBoardVerifier(_bv);
-        dv = IDigVerifier(_sv);
+        dv = IDigVerifier(_dv);
     }
 
-    function newGame(bytes memory _proof, bytes32[] calldata _publicInputs) external {
+    function preparePublicInputs(
+        bytes32[] memory _publicInputs,
+        bytes32 publicInput,
+        uint256 offset
+    ) private pure returns (bytes32[] memory) {
+        for (uint256 i = 0; i < 32; i++) {
+            _publicInputs[i + offset] = (publicInput >> ((31 - i) * 8)) & bytes32(uint256(0xFF));
+        } // TODO not cool, padding 31 bytes with 0s
+        return _publicInputs;
+    }
+
+    function newGame(bytes memory _proof, bytes32 hashed) external {
+        bytes32[] memory _publicInputs = new bytes32[](32);
+        _publicInputs = preparePublicInputs(_publicInputs, hashed, 0);
         require(bv.verify(_proof, _publicInputs), "Invalid Board Config!");
         games[gameIndex].host = msg.sender;
-        games[gameIndex].board = _publicInputs;
+        // games[gameIndex].board = _publicInputs;
         games[gameIndex].status = GameStatus.NotStarted;
         gameIndex++;
     }
@@ -53,15 +67,54 @@ contract MineSweeper {
         require(games[_game].status == GameStatus.NotStarted && _game <= gameIndex, "Game status invalid");
         games[_game].player = msg.sender;
         games[_game].status = GameStatus.Started;
+        games[_game].nextTurn = msg.sender;
     }
 
     function dig(uint256 _game, uint8 _position) external {
         Game storage game = games[_game];
+        require(msg.sender == game.nextTurn, "Dont have right to make tx");
         require(game.status == GameStatus.Started && _game <= gameIndex, "Game status invalid");
         require(game.player == msg.sender, "Only player can make tx");
         require(!game.digged[_position], "Already selected");
         game.digPosition[game.digNonce] = _position;
         game.digNonce++;
+        game.nextTurn = game.host;
+    }
+
+    function revealDig(bytes memory _proof, uint256 _game, uint8 _hit, bytes32 _hashed) external {
+        Game storage game = games[_game];
+        require(msg.sender == game.nextTurn, "Dont have right to make tx");
+        require(game.status == GameStatus.Started && _game <= gameIndex && game.digNonce > 0, "Game status invalid");
+        require(_hit < 2, "Invalid hit");
+        bytes32[] memory _publicInputs = new bytes32[](34);
+        _publicInputs = preparePublicInputs(_publicInputs, _hashed, 0);
+        _publicInputs[32] = bytes32(uint256(_hit));
+        _publicInputs[33] = bytes32(uint256(game.digPosition[game.digNonce - 1]));
+        require(bv.verify(_proof, _publicInputs), "Invalid proof");
+        if (_hit == 1) {
+            game.status = GameStatus.Over;
+            game.winner = msg.sender;
+        } else {
+            if (game.digNonce == 21) { // 20 in a row
+                game.status = GameStatus.Over;
+                game.winner = game.player;
+            }
+        }
+    }
+
+    function leaveGame(uint256 _game) external {
+        Game storage game = games[_game];
+        require(game.status != GameStatus.Over, "Game over");
+        if (game.player == msg.sender) {
+            game.winner = game.host;
+        } else if(game.host == msg.sender) {
+            if (game.status == GameStatus.Started) {
+                game.winner = game.player;
+            }
+        } else {
+            revert("You are not in game");
+        }
+        game.status = GameStatus.Over;
     }
 
 }

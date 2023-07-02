@@ -20,6 +20,6 @@ fn main(hash: pub [u8; 32], hit: pub u1, mines: [u8; 5], dig: pub u8) {
    let computed_hash = std::hash::sha256(mines);
    assert(hash == computed_hash);
 
-   let hits = check_for_hit(mines, dig);
+   let hits = check_for_hit(mines, dig);    
    assert(hits as u1 == hit);
 }
